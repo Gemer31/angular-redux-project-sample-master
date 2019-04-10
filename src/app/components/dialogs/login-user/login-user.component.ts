@@ -1,10 +1,12 @@
-import { NgRedux } from '@angular-redux/store';
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
-import { MatDialogRef } from '@angular/material';
-import { DialogResult } from 'src/app/models/dialog-result';
-import { AppState } from 'src/app/store';
-import { loginUserAction } from 'src/app/store/actions/current-user.actions';
+import {NgRedux} from '@angular-redux/store';
+import {Component, OnInit} from '@angular/core';
+import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
+import {MatDialog, MatDialogRef} from '@angular/material';
+import {DialogResult} from 'src/app/models/dialog-result';
+import {AppState} from 'src/app/store';
+import {loginUserAction} from 'src/app/store/actions/current-user.actions';
+import {EditUserComponent} from '../../edit-user/edit-user.component';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-login-user',
@@ -16,15 +18,16 @@ export class LoginUserComponent implements OnInit {
   credentialForm: FormGroup;
   hide = true;
 
-  constructor(private ngRedux: NgRedux<AppState>,
-    private fb: FormBuilder,
-    public dialogRef: MatDialogRef<LoginUserComponent>) { }
+  constructor(private ngRedux: NgRedux<AppState>, private fb: FormBuilder,
+              public dialogRef: MatDialogRef<LoginUserComponent>, private matDialog: MatDialog,
+              private router: Router) {
+  }
 
   ngOnInit() {
     this.initializeForm();
     this.dialogRef.afterClosed().subscribe(result => {
       if (result !== DialogResult.CLOSE) {
-          this.ngRedux.dispatch(loginUserAction(result));
+        this.ngRedux.dispatch(loginUserAction(result));
       }
     });
   }
@@ -48,6 +51,14 @@ export class LoginUserComponent implements OnInit {
     this.dialogRef.close(DialogResult.CLOSE);
   }
 
+  onCreateUserClick() {
+    this.matDialog.open(EditUserComponent, {
+      width: '550px',
+      height: '400px',
+      data: {userId: null}
+    });
+  }
+
   getErrorText(controlName: string): string {
     const control = this.credentialForm.get(controlName) as FormControl;
     return this.getErrorMessage(control);
@@ -66,4 +77,9 @@ export class LoginUserComponent implements OnInit {
     return errorMesage;
   }
 
+  onRegisterClick() {
+    this.onCancelClick();
+    // this.dialogRef.close(DialogResult.CLOSE);
+    setTimeout(() => this.router.navigate(['register']));
+  }
 }
